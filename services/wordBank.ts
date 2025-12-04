@@ -1,11 +1,8 @@
 
-
-import { RoundData, Difficulty } from "../types";
+import { RoundData, Difficulty, GameMode } from "../types";
 
 interface CategoryData {
   words: string[];
-  // We no longer strictly need 'intruders' array as we will pull from other categories dynamically
-  // but we keep the structure for compatibility if needed.
   intruders: string[]; 
 }
 
@@ -72,41 +69,66 @@ const WORD_BANK: Record<string, CategoryData> = {
   }
 };
 
-export const getLocalRoundData = (category: string, difficulty: Difficulty): RoundData => {
+export const getLocalRoundData = (category: string, difficulty: Difficulty, mode: GameMode): RoundData => {
   const data = WORD_BANK[category] || WORD_BANK['Sports'];
   
-  // 1. Determine number of category words based on difficulty
-  // Easy: 2 words + 1 intruder = 3 bubbles
-  // Normal: 3 words + 1 intruder = 4 bubbles
-  // Hard: 4 words + 1 intruder = 5 bubbles
-  let numCategoryWords = 3;
-  if (difficulty === Difficulty.EASY) numCategoryWords = 2;
-  if (difficulty === Difficulty.HARD) numCategoryWords = 4;
+  // Determine total bubbles
+  let totalBubbles = 4; // Normal
+  if (difficulty === Difficulty.EASY) totalBubbles = 3;
+  if (difficulty === Difficulty.HARD) totalBubbles = 5;
 
-  // 1. Get Target Words
-  const availableWords = [...data.words];
-  const selectedWords: string[] = [];
-  
-  // Pick unique words
-  for(let i=0; i<numCategoryWords; i++) {
-    if (availableWords.length === 0) break;
-    const randomIndex = Math.floor(Math.random() * availableWords.length);
-    selectedWords.push(availableWords[randomIndex]);
-    availableWords.splice(randomIndex, 1);
+  const resultWords: { text: string; isTarget: boolean }[] = [];
+
+  // --- HELPER: Get Random Categories ---
+  const allCategories = Object.keys(WORD_BANK);
+  let otherCategories = allCategories.filter(c => c !== category);
+
+  // CONSTRAINT: If selected category is Food, do NOT allow Fruit or Vegetables as decoys/intruders
+  if (category === 'Food') {
+    otherCategories = otherCategories.filter(c => c !== 'Fruit' && c !== 'Vegetables');
   }
 
-  // 2. Get Random Intruder from DIFFERENT category
-  const allCategories = Object.keys(WORD_BANK);
-  // Filter out current category
-  const otherCategories = allCategories.filter(c => c !== category);
-  
-  const randomCatKey = otherCategories[Math.floor(Math.random() * otherCategories.length)];
-  const otherCategoryData = WORD_BANK[randomCatKey];
-  
-  const intruderWord = otherCategoryData.words[Math.floor(Math.random() * otherCategoryData.words.length)];
+  const getRandomWordFromOtherCategory = () => {
+    const randomCatKey = otherCategories[Math.floor(Math.random() * otherCategories.length)];
+    const otherCategoryData = WORD_BANK[randomCatKey];
+    return otherCategoryData.words[Math.floor(Math.random() * otherCategoryData.words.length)];
+  };
+
+  if (mode === GameMode.FIND_INTRUDER) {
+    // MODE 1: Classic. Find the ONE word that DOES NOT belong.
+    // Structure: (Total-1) Category Words + 1 Intruder (Target)
+    
+    // 1. Pick (Total - 1) words from current category
+    const availableWords = [...data.words];
+    for (let i = 0; i < totalBubbles - 1; i++) {
+      if (availableWords.length === 0) break;
+      const rIdx = Math.floor(Math.random() * availableWords.length);
+      resultWords.push({ text: availableWords[rIdx], isTarget: false });
+      availableWords.splice(rIdx, 1);
+    }
+
+    // 2. Pick 1 Intruder
+    const intruder = getRandomWordFromOtherCategory();
+    resultWords.push({ text: intruder, isTarget: true });
+
+  } else {
+    // MODE 2: Find Belonging. Find the ONE word that DOES belong.
+    // Structure: 1 Category Word (Target) + (Total-1) Decoys from other categories
+
+    // 1. Pick 1 word from current category (The Target)
+    const availableWords = [...data.words];
+    const targetWord = availableWords[Math.floor(Math.random() * availableWords.length)];
+    resultWords.push({ text: targetWord, isTarget: true });
+
+    // 2. Pick (Total - 1) Decoys
+    for (let i = 0; i < totalBubbles - 1; i++) {
+      const decoy = getRandomWordFromOtherCategory();
+      // Simple check to avoid duplicate decoys if possible, though unlikely with large bank
+      resultWords.push({ text: decoy, isTarget: false });
+    }
+  }
 
   return {
-    categoryWords: selectedWords,
-    intruderWord: intruderWord
+    words: resultWords
   };
 };

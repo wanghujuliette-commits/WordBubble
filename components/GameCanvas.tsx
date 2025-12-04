@@ -1,12 +1,13 @@
 
 import React, { useRef, useEffect, useCallback } from 'react';
-import { GameState, WordBubble, Particle, FloatingText, PopResult } from '../types';
+import { GameState, WordBubble, Particle, FloatingText, PopResult, Theme } from '../types';
 
 interface GameCanvasProps {
   gameState: GameState;
   bubbles: WordBubble[];
   setBubbles: React.Dispatch<React.SetStateAction<WordBubble[]>>;
   onBubblePop: (bubble: WordBubble) => PopResult;
+  theme: Theme;
 }
 
 export const GameCanvas: React.FC<GameCanvasProps> = ({
@@ -14,6 +15,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   bubbles,
   setBubbles,
   onBubblePop,
+  theme
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
@@ -143,12 +145,33 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     const height = canvas.height;
     timeRef.current += 0.02;
 
-    // 1. Draw Background
+    // 1. Draw Background based on Theme
     const bgGrad = ctx.createLinearGradient(0, 0, 0, height);
-    bgGrad.addColorStop(0, '#0f172a'); // Slate 900
-    bgGrad.addColorStop(1, '#1e293b'); // Slate 800
+    
+    if (theme === 'TECH') {
+        bgGrad.addColorStop(0, '#0f172a'); // Slate 900
+        bgGrad.addColorStop(1, '#1e293b'); // Slate 800
+    } else if (theme === 'CYBERPUNK') {
+        bgGrad.addColorStop(0, '#09090b'); // Zinc 950
+        bgGrad.addColorStop(1, '#27272a'); // Zinc 800
+    } else if (theme === 'NATURE') {
+        bgGrad.addColorStop(0, '#134e4a'); // Teal 900
+        bgGrad.addColorStop(1, '#064e3b'); // Emerald 900
+    }
+
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, width, height);
+
+    // Grid effect for Tech/Cyberpunk
+    if (theme !== 'NATURE') {
+        ctx.strokeStyle = theme === 'CYBERPUNK' ? 'rgba(236, 72, 153, 0.1)' : 'rgba(255,255,255,0.03)';
+        ctx.lineWidth = 1;
+        const step = 50;
+        ctx.beginPath();
+        for (let x = 0; x < width; x += step) { ctx.moveTo(x, 0); ctx.lineTo(x, height); }
+        for (let y = 0; y < height; y += step) { ctx.moveTo(0, y); ctx.lineTo(width, y); }
+        ctx.stroke();
+    }
 
     // 2. Update & Draw Bubbles
     if (gameState === GameState.PLAYING) {
@@ -290,7 +313,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     floatingTextsRef.current = floatingTextsRef.current.filter(ft => ft.life > 0);
 
     reqIdRef.current = requestAnimationFrame(update);
-  }, [gameState, bubbles]);
+  }, [gameState, bubbles, theme]);
 
   useEffect(() => {
     reqIdRef.current = requestAnimationFrame(update);
@@ -300,7 +323,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   }, [update]);
 
   return (
-    <div className="fixed inset-0 w-full h-full bg-slate-900 z-0 cursor-pointer touch-none">
+    <div className={`fixed inset-0 w-full h-full z-0 cursor-pointer touch-none ${theme === 'TECH' ? 'bg-slate-900' : theme === 'CYBERPUNK' ? 'bg-black' : 'bg-teal-900'}`}>
       <canvas
         ref={canvasRef}
         className="w-full h-full block"

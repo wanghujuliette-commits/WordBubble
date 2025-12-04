@@ -1,6 +1,6 @@
 
-
 export enum GameState {
+  LOGIN = 'LOGIN',
   MENU = 'MENU',
   LOADING_ROUND = 'LOADING_ROUND',
   PLAYING = 'PLAYING',
@@ -14,6 +14,13 @@ export enum Difficulty {
   HARD = 'Hard'
 }
 
+export enum GameMode {
+  FIND_INTRUDER = 'Find Intruder', // Classic: Find the one that DOESN'T belong
+  FIND_BELONGING = 'Find Belonging' // New: Find the one that DOES belong
+}
+
+export type Theme = 'TECH' | 'CYBERPUNK' | 'NATURE';
+
 export const CATEGORIES = [
   'Sports', 'Sea Animals', 'Vegetables', 'Fruit', 'Transport', 
   'Clothes', 'Weather', 'Animals', 'Toys', 'Food', 
@@ -23,7 +30,7 @@ export const CATEGORIES = [
 export interface WordBubble {
   id: string;
   text: string;
-  isIntruder: boolean;
+  isTarget: boolean; // Renamed from isIntruder to be generic based on mode
   x: number;
   y: number;
   anchorX: number;
@@ -38,8 +45,7 @@ export interface WordBubble {
 }
 
 export interface RoundData {
-  categoryWords: string[];
-  intruderWord: string;
+  words: { text: string; isTarget: boolean }[];
 }
 
 export interface Particle {
