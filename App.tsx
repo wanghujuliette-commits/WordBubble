@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { generateRoundWords } from './services/geminiService';
 import { GameCanvas } from './components/GameCanvas';
@@ -30,6 +29,29 @@ const StarIcon: React.FC<{ filled: boolean }> = ({ filled }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill={filled ? "#fbbf24" : "none"} stroke={filled ? "#f59e0b" : "#475569"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-0.5 transform transition-all duration-500 hover:scale-110">
         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
     </svg>
+);
+
+// --- Brand Logo ---
+const WonderLogo: React.FC<{ className?: string }> = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className={className}>
+    <defs>
+      <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="currentColor" stopOpacity="0.8" />
+        <stop offset="100%" stopColor="currentColor" stopOpacity="0.4" />
+      </linearGradient>
+    </defs>
+    {/* Open Book Shape */}
+    <path d="M10 50 Q 30 50 50 70 Q 70 50 90 50 L 90 85 Q 70 85 50 95 Q 30 85 10 85 Z" fill="url(#logoGradient)" />
+    {/* Page Lines */}
+    <path d="M15 60 Q 30 60 45 72" fill="none" stroke="white" strokeWidth="2" strokeOpacity="0.5" />
+    <path d="M55 72 Q 70 60 85 60" fill="none" stroke="white" strokeWidth="2" strokeOpacity="0.5" />
+    
+    {/* Rising W Star */}
+    <path d="M30 35 L 40 60 L 50 40 L 60 60 L 70 35" fill="none" stroke="#fbbf24" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+    <circle cx="50" cy="25" r="8" fill="#fbbf24" className="animate-pulse" />
+    <circle cx="70" cy="15" r="4" fill="#fbbf24" fillOpacity="0.7" />
+    <circle cx="30" cy="15" r="4" fill="#fbbf24" fillOpacity="0.7" />
+  </svg>
 );
 
 // --- Achievement Definitions ---
@@ -369,12 +391,13 @@ const App: React.FC = () => {
   const renderLogin = () => (
       <div className="relative z-50 w-full px-4 flex justify-center animate-fade-in-up pointer-events-auto">
           <div className="bg-slate-900/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-cyan-500/30 p-8 w-full max-w-sm flex flex-col items-center">
-              <div className="mb-6 relative group text-center">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-lg blur opacity-40 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
-                  <h1 className="relative text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-blue-300 tracking-tighter">
-                      新知旺豆
+              <div className="mb-6 relative group text-center flex flex-col items-center">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-full blur opacity-40 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+                  <WonderLogo className="w-20 h-20 text-cyan-400 mb-2 relative z-10 filter drop-shadow-lg" />
+                  <h1 className="relative text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-blue-300 tracking-tighter">
+                      WonderEnglish
                   </h1>
-                  <div className="text-center text-cyan-500/80 text-[10px] tracking-[0.3em] mt-1 font-bold uppercase">WonderBean</div>
+                  <div className="text-center text-cyan-500/80 text-[10px] tracking-[0.3em] mt-1 font-bold uppercase">新知旺豆</div>
               </div>
               
               <form onSubmit={handleLogin} className="w-full space-y-4">
@@ -431,11 +454,14 @@ const App: React.FC = () => {
         
         {/* Header */}
         <div className="flex justify-between items-center mb-4 md:mb-6">
-            <div>
-                <h1 className="text-2xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 filter drop-shadow-lg">
-                    新知旺豆
-                </h1>
-                <span className="text-[10px] md:text-sm text-white/50 font-normal tracking-wide block">WONDERBEAN</span>
+            <div className="flex items-center gap-3">
+                <WonderLogo className={`w-10 h-10 md:w-12 md:h-12 ${theme === 'CYBERPUNK' ? 'text-pink-500' : theme === 'NATURE' ? 'text-emerald-400' : 'text-cyan-400'}`} />
+                <div>
+                    <h1 className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 filter drop-shadow-lg tracking-tight">
+                        WonderEnglish
+                    </h1>
+                    <span className="text-[10px] md:text-xs text-white/50 font-normal tracking-wide block uppercase">新知旺豆</span>
+                </div>
             </div>
             
             <div className="flex items-center gap-3">
